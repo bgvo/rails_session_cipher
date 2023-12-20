@@ -6,18 +6,21 @@ require "base64"
 require "openssl"
 
 module RailsSessionCipher
+  extend Configuration
+
   class InvalidMessage < StandardError; end
 
   class << self
-    include Configuration
-
-    def encrypt(data, key, iv, auth_tag, hash_digest_class, salt)
+    def encrypt(data, key, iv, auth_tag, options = {})
       # Convert data to JSON
       json_data = data.to_json
 
       # Key generation with PBKDF2
       cipher = OpenSSL::Cipher.new("aes-256-gcm")
-      secret = OpenSSL::PKCS5.pbkdf2_hmac(key, salt, 1000, cipher.key_len, hash_digest_class.new)
+      iteration_count = configuration.iteration_count
+      salt = options[:salt] || configuration.salt
+      hash_digest_class = options[:hash_digest_class] || configuration.hash_digest_class
+      secret = OpenSSL::PKCS5.pbkdf2_hmac(key, salt, iteration_count, cipher.key_len, hash_digest_class.new)
 
       # Initialize cipher for encryption
       cipher.encrypt
@@ -34,18 +37,16 @@ module RailsSessionCipher
       [Base64.strict_encode64(encrypted_data), Base64.strict_encode64(iv), Base64.strict_encode64(auth_tag)].join("--")
     end
 
-    def decrypt(session_cookie)
+    def decrypt(session_cookie, key, options = {})
       data, iv, auth_tag = session_cookie&.split("--")&.map { |v| Base64.strict_decode64(v) }
       raise InvalidMessage if (auth_tag.nil? || auth_tag.bytes.length != 16)
 
+      salt = options[:salt] || configuration.salt
+      hash_digest_class = options[:hash_digest_class] || configuration.hash_digest_class
+
       cipher = OpenSSL::Cipher.new("aes-256-gcm")
-      secret = OpenSSL::PKCS5.pbkdf2_hmac(
-        Rails.application.secret_key_base,
-        Rails.configuration.action_dispatch.authenticated_encrypted_cookie_salt,
-        1000,
-        cipher.key_len,
-        Rails.configuration.active_support.hash_digest_class.new
-      )
+      iteration_count = configuration.iteration_count
+      secret = OpenSSL::PKCS5.pbkdf2_hmac(key, salt, iteration_count, cipher.key_len, hash_digest_class.new)
 
       # Setup cipher for decryption and add inputs
       cipher.decrypt

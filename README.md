@@ -1,39 +1,72 @@
 # RailsSessionCipher
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/session_decrypt`. To experiment with that code, run `bin/console` for an interactive prompt.
+## Overview
 
-TODO: Delete this and the text above, and describe your gem
+RailsSessionCipher is a Ruby gem providing an efficient and secure way to encrypt and decrypt Rails session cookies using AES-256-GCM cipher. It utilizes OpenSSL for cryptographic operations and is designed to be easily integrated into any Rails application.
+
+## Features
+
+- **AES-256-GCM Encryption:** Utilizes AES-256-GCM for high-security encryption.
+- **Configurable:** Offers customizable options for salt, hash digest class, and iteration count.
+- **Error Handling:** Includes custom error handling for invalid messages during decryption.
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'session_decrypt'
+gem 'rails_session_cipher'
 ```
 
 And then execute:
 
-    $ bundle install
+```
+bundle install
+```
 
 Or install it yourself as:
-
-    $ gem install session_decrypt
+```
+gem install rails_session_cipher
+```
 
 ## Usage
+# Configuration
+Before using RailsSessionCipher, you need to configure it with your preferred settings:
 
-TODO: Write usage instructions here
+```ruby
+RailsSessionCipher.configure do |config|
+  config.salt = "your_salt_here"
+  config.iteration_count = 20000
+  config.hash_digest_class = OpenSSL::Digest::SHA256
+end
+```
 
-## Development
+# Encrypting Data
+To encrypt data:
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+```ruby
+encrypted_data = RailsSessionCipher.encrypt(data, key, iv, auth_tag)
+```
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+- data: The data you want to encrypt.
+- key: Your secret key.
+- iv: Initialization vector.
+- auth_tag: Authentication tag.
+- Options can be passed for salt and hash digest class.
 
-## Contributing
+# Decrypting Data
+To decrypt data:
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/session_decrypt.
+```ruby
+decrypted_data = RailsSessionCipher.decrypt(session_cookie, key)
+```
+- session_cookie: Encrypted session cookie string.
+- key: Your secret key.
+- Options can be passed for salt and hash digest class.
 
-## License
+## Error Handling
+When decryption fails due to invalid data, an InvalidMessage error is raised.
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+# Dependencies
+Ruby
+OpenSSL
