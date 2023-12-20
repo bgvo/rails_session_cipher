@@ -30,7 +30,7 @@ gem install rails_session_cipher
 ```
 
 ## Usage
-# Configuration
+### Configuration
 Before using RailsSessionCipher, you need to configure it with your preferred settings:
 
 ```ruby
@@ -41,7 +41,7 @@ RailsSessionCipher.configure do |config|
 end
 ```
 
-# Encrypting Data
+### Encrypting Data
 To encrypt data:
 
 ```ruby
@@ -54,7 +54,7 @@ encrypted_data = RailsSessionCipher.encrypt(data, key, iv, auth_tag)
 - auth_tag: Authentication tag.
 - Options can be passed for salt and hash digest class.
 
-# Decrypting Data
+### Decrypting Data
 To decrypt data:
 
 ```ruby
@@ -64,9 +64,30 @@ decrypted_data = RailsSessionCipher.decrypt(session_cookie, key)
 - key: Your secret key.
 - Options can be passed for salt and hash digest class.
 
-## Error Handling
+### Error Handling
 When decryption fails due to invalid data, an InvalidMessage error is raised.
 
-# Dependencies
+### Benchmarking
+
+To benchmark the performance of encryption and decryption, run the following script:
+
+```bash
+ruby benchmarks/encrypt_decrypt_benchmark.rb
+```
+
+```bash
+Rehearsal --------------------------------------------
+Encrypt:   0.028632   0.000071   0.028703 (  0.028811)
+Decrypt:   0.023406   0.000186   0.023592 (  0.023833)
+----------------------------------- total: 0.052295sec
+
+               user     system      total        real
+Encrypt:   0.031002   0.000115   0.031117 (  0.031190)
+Decrypt:   0.030445   0.000050   0.030495 (  0.030541)
+```
+
+This benchmark was run on a MacBook Pro (16-inch, 2019) with a 2.6 GHz 6-Core Intel Core i7 processor, AMD Radeon Pro 5300M 4 GB and Intel UHD Graphics 630 1536 MB graphics, 16 GB 2667 MHz DDR4 memory, running macOS 13.4.1.
+
+## Dependencies
 Ruby
 OpenSSL
